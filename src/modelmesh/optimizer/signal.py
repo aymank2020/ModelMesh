@@ -2,7 +2,7 @@
 
 Signal-based variable ordering is inspired by the VSIDS (Variable State
 Independent Decaying Sum) heuristic from SAT solving. Variables involved in
-recent conflicts have their signal bumped, and all activities decay
+recent conflicts have their signal bumped, and all signals decay
 periodically. This focuses the search on variables that are currently
 causing the most difficulty.
 
@@ -74,13 +74,13 @@ class SignalScore:
             self._signal /= divisor
 
 
-class SignalManager:
+class SignalTracker:
     """Manages signal scores for all variables in a CSP.
 
     Implements VSIDS-style signal tracking:
     - Bump: increase signal of variables involved in a conflict
-    - Decay: periodically reduce all activities to favor recent conflicts
-    - Rescale: prevent floating-point overflow when activities grow large
+    - Decay: periodically reduce all signals to favor recent conflicts
+    - Rescale: prevent floating-point overflow when signals grow large
 
     Args:
         variables: All CSP variables to track.
@@ -176,14 +176,14 @@ class SignalManager:
             score.decay(self._decay_factor)
 
     def _rescale_all(self) -> None:
-        """Rescale all activities to prevent overflow."""
+        """Rescale all signals to prevent overflow."""
         max_signal = max(
             (s.signal for s in self._scores.values()), default=1.0
         )
         if max_signal > 0:
             for score in self._scores.values():
                 score.rescale(max_signal)
-            self._bump_amount /= max_signal
+            self._bump_amount /= self._rescale_threshold
         self._rescale_count += 1
 
     def get_ordering(self, unassigned: list[Variable]) -> list[Variable]:
@@ -211,14 +211,14 @@ class SignalManager:
 
     def get_statistics(self) -> dict[str, float]:
         """Return summary statistics about signal tracking."""
-        activities = [s.signal for s in self._scores.values()]
-        if not activities:
+        signals = [s.signal for s in self._scores.values()]
+        if not signals:
             return {"mean": 0.0, "max": 0.0, "min": 0.0, "std": 0.0}
 
-        mean_act = sum(activities) / len(activities)
-        max_act = max(activities)
-        min_act = min(activities)
-        variance = sum((a - mean_act) ** 2 for a in activities) / len(activities)
+        mean_act = sum(signals) / len(signals)
+        max_act = max(signals)
+        min_act = min(signals)
+        variance = sum((a - mean_act) ** 2 for a in signals) / len(signals)
         std_act = variance ** 0.5
 
         return {
@@ -243,7 +243,7 @@ class SignalSelector(VariableSelector):
     variable index for determinism.
     """
 
-    def __init__(self, signal_manager: SignalManager) -> None:
+    def __init__(self, signal_manager: SignalTracker) -> None:
         self._manager = signal_manager
 
     def select(

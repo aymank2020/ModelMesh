@@ -31,7 +31,7 @@ class PropagationLevel(Enum):
     NODE = "node"
     ARC = "arc"
     BOUNDS = "bounds"
-    SINGLETON = "probe"
+    SINGLETON = "singleton"
     FULL = "full"
 
 

@@ -16,7 +16,7 @@ class AllDifferent(Constraint):
 
     Propagation strategy:
     - When a variable is assigned value v, remove v from all other domains.
-    - When a domain becomes probe {v}, remove v from all other domains.
+    - When a domain becomes singleton {v}, remove v from all other domains.
     - Detects inconsistency when domain size < number of remaining values needed.
     """
 

@@ -45,11 +45,11 @@ class TestDomainInvariants:
         assert d.contains(2)
         assert d.contains(4)
 
-    def test_probe_after_assign(self):
+    def test_singleton_after_assign(self):
         """After assign, domain contains exactly one value."""
         d = Domain(range(1, 10))
         d.assign(5)
-        assert d.is_probe
+        assert d.is_singleton
         assert d.contains(5)
 
     def test_copy_independence(self):

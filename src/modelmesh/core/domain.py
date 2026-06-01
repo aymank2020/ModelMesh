@@ -31,7 +31,7 @@ class Domain:
         return len(self._values) == 0
 
     @property
-    def is_probe(self) -> bool:
+    def is_singleton(self) -> bool:
         return len(self._values) == 1
 
     @property

@@ -132,14 +132,14 @@ class ConsistencyChecker:
                     return False
         return True
 
-    def detect_probe_propagation(self) -> list[tuple[Variable, int]]:
-        """Find variables with probe domains that haven't been propagated.
+    def detect_singleton_propagation(self) -> list[tuple[Variable, int]]:
+        """Find variables with singleton domains that haven't been propagated.
 
         Returns list of (variable, value) pairs that should trigger propagation.
         """
-        probes = []
+        singletons = []
         for var in self._variables:
-            if var.domain.is_probe and not var.is_assigned:
+            if var.domain.is_singleton and not var.is_assigned:
                 val = next(iter(var.domain))
-                probes.append((var, val))
-        return probes
+                singletons.append((var, val))
+        return singletons

@@ -1,11 +1,11 @@
-"""Probe arc consistency (SAC).
+"""Candidate probing consistency.
 
-SAC is stronger than arc consistency. A value v in domain(x) is SAC
-if, after tentatively assigning x=v and enforcing arc consistency,
-no domain becomes empty. Values that fail this test can be removed.
+This pass checks candidate values by temporarily pinning a variable, running
+arc consistency, and then restoring the domains. Values that make the local
+network inconsistent can be removed from the original domain.
 
-SAC is more expensive than AC but can prune more values, especially
-for hard problems near the phase transition.
+The pass is more expensive than AC-3, but it is useful for dense or brittle
+models where local support checks leave too many candidates alive.
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from modelmesh.propagation.ac3 import AC3Propagator, PropagationResult
 
 
 class ProbePropagator:
-    """Probe Arc Consistency propagator.
+    """Value-probing propagator.
 
     For each unassigned variable x and each value v in domain(x):
     1. Tentatively assign x = v
@@ -33,9 +33,9 @@ class ProbePropagator:
         self._constraints = constraints
 
     def propagate(self, assignment: dict[Variable, int]) -> PropagationResult:
-        """Run SAC propagation.
+        """Run probe consistency propagation.
 
-        Returns PropagationResult with all values pruned by SAC.
+        Returns PropagationResult with all values pruned by probe consistency.
         """
         pruned: dict[Variable, list[int]] = {}
         total_revisions = 0
@@ -51,7 +51,7 @@ class ProbePropagator:
 
                 values_to_remove = []
                 for val in list(var.domain):
-                    if not self._is_sac_consistent(var, val, assignment):
+                    if not self._candidate_survives(var, val, assignment):
                         values_to_remove.append(val)
 
                 for val in values_to_remove:
@@ -67,18 +67,18 @@ class ProbePropagator:
 
         return PropagationResult(True, pruned, total_revisions)
 
-    def _is_sac_consistent(
+    def _candidate_survives(
         self,
         var: Variable,
         value: int,
         assignment: dict[Variable, int],
     ) -> bool:
-        """Check if assigning var=value is SAC-consistent.
+        """Check whether a tentative value survives propagation.
 
         Tentatively assigns, runs AC-3, checks for wipeout, then restores.
         """
-        # Save all domain generations
-        generations = {v: v.domain.generation for v in self._variables}
+        # Save current domain generations so the trial can be undone.
+        trial_generations = {v: v.domain.generation for v in self._variables}
         for v in self._variables:
             v.mark_generation()
 
@@ -93,7 +93,7 @@ class ProbePropagator:
 
         # Restore all domains
         for v in self._variables:
-            v.restore_to(generations[v])
+            v.restore_to(trial_generations[v])
 
         return result.consistent
 
@@ -102,9 +102,9 @@ class ProbePropagator:
         var: Variable,
         assignment: dict[Variable, int],
     ) -> PropagationResult:
-        """Run SAC only for variables connected to var.
+        """Run probe consistency only for variables connected to var.
 
-        More efficient than full SAC when only one variable changed.
+        More efficient than full probe consistency when only one variable changed.
         """
         pruned: dict[Variable, list[int]] = {}
         revisions = 0
@@ -123,7 +123,7 @@ class ProbePropagator:
 
             values_to_remove = []
             for val in list(neighbor.domain):
-                if not self._is_sac_consistent(neighbor, val, assignment):
+                if not self._candidate_survives(neighbor, val, assignment):
                     values_to_remove.append(val)
 
             for val in values_to_remove:

@@ -196,12 +196,8 @@ class ScalarProduct(Constraint):
                 others_min += coeff * assignment[other]
                 others_max += coeff * assignment[other]
             else:
-                if coeff >= 0:
-                    others_min += coeff * other.domain.min_value
-                    others_max += coeff * other.domain.max_value
-                else:
-                    others_min += coeff * other.domain.max_value
-                    others_max += coeff * other.domain.min_value
+                others_min += coeff * other.domain.min_value
+                others_max += coeff * other.domain.max_value
 
         supported = set()
         for val in var.domain.values():

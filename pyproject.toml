@@ -10,7 +10,28 @@ readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
 authors = [{name = "ayman kamel", email = "ayman@openclaw.dev"}]
+keywords = ["constraint-programming", "csp", "arc-consistency", "backtracking", "scheduling"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/aymank2020/ModelMesh"
+Repository = "https://github.com/aymank2020/ModelMesh"
+Issues = "https://github.com/aymank2020/ModelMesh/issues"
+
+[project.scripts]
+modelmesh = "modelmesh.cli.runner:run_cli"
 
 [project.optional-dependencies]
 dev = [
@@ -22,6 +43,15 @@ dev = [
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+modelmesh = ["py.typed"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["modelmesh"]
+
+[tool.coverage.report]
+fail_under = 80

@@ -133,4 +133,4 @@ class SelectivityAnalyzer:
             total_support += supports
             total_values += 1
 
-        return total_support / total_values if total_values > 0 else 0.0
+        return total_support / v1.domain_size if v1.domain_size > 0 else 0.0
