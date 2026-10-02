@@ -71,3 +71,7 @@ Run:
 ```bash
 modelmesh example.json --all
 ```
+
+Unsupported constraint types and duplicate variable names raise ValueError. The CLI rejects malformed models before search and reads JSON as UTF-8. Lambda constraints must be converted to a supported table or global constraint before saving.
+
+Legacy JSON `neq` constraints require two variables and are enforced. With `--limit`, incomplete single-solution search prints UNKNOWN; incomplete enumeration is marked explicitly. Both return exit status 2, while proven unsatisfiability returns status 1. The library exposes `solver.node_limit_reached` without changing the existing solution return types.
